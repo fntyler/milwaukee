@@ -1,0 +1,21 @@
+#!/bin/bash
+# s.earch w.ork d.irectory
+# export var 'SWDIR' to change search directory
+
+declare -a SELECTIONS
+
+# set default value if variable length equal to 0
+SWDIR=${SWDIR:-"$HOME/bia"}
+
+SELECTIONS=$(ls -t ${SWDIR}/ | fzf -m --bind=ctrl-space:toggle)
+
+# create array for multi-select
+COUNT=0
+for s in $SELECTIONS; do
+	SELECTIONS[$COUNT]=$(echo -n "${SWDIR}/$s ")
+	((COUNT++))
+done
+
+[ -z ${SELECTIONS[@]} ] && exit 70
+
+nvim ${SELECTIONS[@]}
