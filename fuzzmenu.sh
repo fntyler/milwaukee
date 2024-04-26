@@ -23,6 +23,13 @@ function _i3cmd() {
     fi
 }
 
+if [ -e ~/.fuzzmenu_choices ]; then
+    . ~/.fuzzmenu_choices
+    echo '[INFO] Sourced ~/.fuzzmenu_choices' 2>&1 >> /tmp/fuzzmenu.log
+else
+    echo '[INFO] Missing ~/.fuzzmenu_choices' 2>&1 >> /tmp/fuzzmenu.log
+fi
+
 CHOICES+=( [github]='https://github.com/' )
 CHOICES+=( [twilio]='https://console.twilio.com/us1/?frameUrl=/console' )
 CHOICES+=( [pep8-python]='https://peps.python.org/pep-0008/' )
