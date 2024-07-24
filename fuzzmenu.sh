@@ -14,27 +14,37 @@ function _determine_browser() {
 }
 
 function _i3cmd() {
-    local SELECTED_CHOICE=${1}
-    local DETERMINED_BROWSER=${2}
-    local IS_INCOGNITO=${3}
-    local TARGET_LOGFILE=${4:-/tmp/fuzzmenu.log}
-    test -z $1 && exit 71
+    local SELECTED_CHOICE
+    local DETERMINED_BROWSER
+    local IS_INCOGNITO
+
+    SELECTED_CHOICE=${1}
+    DETERMINED_BROWSER=${2}
+    IS_INCOGNITO=${3}
+
+    test -z "$1" && exit 71
+
     if [[ $IS_INCOGNITO == 'false' ]]; then
         test $(i3-msg "exec --no-startup-id ${DETERMINED_BROWSER} --new-window ${SELECTED_CHOICE}" && \
-            echo "Opened ${SELECTED_CHOICE}" | _log)
+            echo "Opened ${SELECTED_CHOICE}" | _log "$@")
     else
         test $(i3-msg "exec --no-startup-id ${DETERMINED_BROWSER} --new-window --incognito ${SELECTED_CHOICE}" && \
-            echo "Opened ${SELECTED_CHOICE} as incognito" | _log)
+            echo "Opened ${SELECTED_CHOICE} as incognito" | _log "$@")
     fi
 }
 
 function _log() {
-    local DATE=$(date '+%Y-%m-%d %T')
-    local LOG_LEVEL=${1:-'INFO'}
-    local LOG_FILE=${2:-/tmp/fuzzmenu.log}
+    local DATE
+    local LOG_LEVEL
+    local LOG_FILE
     local LOG_MESSAGE
-    read LOG_MESSAGE
-    echo "$DATE [$LOG_LEVEL] ${LOG_MESSAGE}" >> ${LOG_FILE}
+
+    DATE=$(date '+%Y-%m-%d %T')
+    LOG_LEVEL=${1:-'INFO'}
+    LOG_FILE=${2:-/tmp/fuzzmenu.log}
+
+    read -r LOG_MESSAGE
+    echo "$DATE [$LOG_LEVEL] ${LOG_MESSAGE}" >> "$LOG_FILE"
 }
 
 
@@ -49,11 +59,11 @@ INCOGNITO='false'
 
 # main
 
-if [ -e ~/.fuzzmenu_choices ]; then
+if [ -e "$HOME/.fuzzmenu_choices" ]; then
     . ~/.fuzzmenu_choices && \
-        echo 'Sourced ~/.fuzzmenu_choices' | _log 
+        echo 'Sourced ~/.fuzzmenu_choices' | _log "$@"
 else
-    echo 'Missing ~/.fuzzmenu_choices' | _log 
+    echo 'Missing ~/.fuzzmenu_choices' | _log "$@"
 fi
 
 CHOICES+=( [github]='https://github.com/' )
