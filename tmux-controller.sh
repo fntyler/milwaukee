@@ -6,7 +6,7 @@
 if [ $# -eq 1 ]; then
     target_dir=${1}
 else
-    target_dir=$(find ~/dev -maxdepth 1 -mindepth 1 -type d | fzf)
+    target_dir=$(find ~/dev ~/ -maxdepth 1 -mindepth 1 -type d | fzf)
 fi
 
 if [ -z "$target_dir" ]; then
@@ -21,7 +21,9 @@ tmux_proc=$(pgrep tmux | tr \\n _)
     tmux new-session -s "$target_selected" -c "$target_dir" && exit 70
 
 if ! tmux has-session -t "$target_selected" 2>/dev/null; then
-    tmux new-session -ds "$target_selected" -c "$target_dir"
+    tmux new-session -ds "$target_selected" -c "$target_dir" && exit 70
+    #tmux attach-session -dx -t "$target_selected" && exit 70
 fi
 
-tmux switch-client -t "$target_selected"
+#tmux switch-client -t "$target_selected"
+tmux attach-session -dx -t "$target_selected" && exit 70
