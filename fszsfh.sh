@@ -22,6 +22,8 @@ function _sshcmd() {
     local REMOTE_HOST
 
     REMOTE_HOST=${1}
+
+    ssh -oUser=fnt -oHost="$REMOTE_HOST" -oPort=22
 }
 
 declare -A CHOICES
@@ -30,7 +32,6 @@ export FZF_DEFAULT_OPTS="--color=bg+:#D9D9D9,bg:#E1E1E1,border:#C8C8C8,spinner:#
     --border \
     --reverse"
 
-INCOGNITO='false'
 
 # main
 
@@ -42,17 +43,23 @@ fi
 CHOICES+=( [localhost]='127.0.0.1' )
 #echo "${CHOICES[@]}"
 
-CHOICE=$(for i in ${!CHOICES[@]}; do echo $i; done | fzf)
+CHOICE=$(for i in "${!CHOICES[@]}"; do echo "$i"; done | fzf)
 
-test -n "$CHOICE" && echo "${CHOICE}" || echo "[ ${CHOICE} ] is null" | _log 'WARN'
+#test -n "$CHOICE" && echo "${CHOICE}" || echo "[ ${CHOICE} ] is null" | _log 'WARN'
+#test -n "$CHOICE" && _sshcmd "$CHOICE" || echo "[ ${CHOICE} ] is null" | _log 'WARN'
+
+#echo "${CHOICES[$CHOICE]}"
+
 
 tmux_proc=$(pgrep tmux | tr \\n _)
 
 [ -z "$TMUX" ] && [ -z "$tmux_proc" ] && \
-    tmux new-session -s "$CHOICE" -c "$HOME" && exit 70
+    tmux new-session -s "ssh-$CHOICE" -c "$HOME" "${CHOICES[$CHOICE]}" && exit 70
 
-if ! tmux has-session -t "$CHOICE" 2>/dev/null; then
-    tmux new-session -ds "$CHOICE" -c "$HOME" && exit 70
+if ! tmux has-session -t "ssh-$CHOICE" 2>/dev/null; then
+    tmux new-session -ds "ssh-$CHOICE" -c "$HOME" "${CHOICES[$CHOICE]}" \; attach && exit 70
 fi
 
-tmux attach-session -dx -t "$CHOICE" && exit 70
+# If -d is specified, any other clients attached to the session are detached.
+# If -x is given, send SIGHUP to the parent process of the client as well as detaching the client, typically causing it to exit.
+tmux attach-session -dx -t "ssh-$CHOICE" && exit 70
