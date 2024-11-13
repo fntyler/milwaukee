@@ -26,6 +26,7 @@ function _sshcmd() {
     ssh -oUser=fnt -oHost="$REMOTE_HOST" -oPort=22
 }
 
+
 declare -A CHOICES
 
 export FZF_DEFAULT_OPTS="--color=bg+:#D9D9D9,bg:#E1E1E1,border:#C8C8C8,spinner:#719899,hl:#719872,fg:#0388A6,header:#719872,info:#150023,pointer:#E12672,marker:#E17899,fg+:#0388A6,preview-bg:#D9D9D9,prompt:#0099BD,hl+:#024059,query:#024059 \
@@ -41,25 +42,23 @@ if [ -e "$HOME/.fszsfh.txt" ]; then
 fi
 
 CHOICES+=( [localhost]='127.0.0.1' )
-#echo "${CHOICES[@]}"
 
 CHOICE=$(for i in "${!CHOICES[@]}"; do echo "$i"; done | fzf)
 
-#test -n "$CHOICE" && echo "${CHOICE}" || echo "[ ${CHOICE} ] is null" | _log 'WARN'
-#test -n "$CHOICE" && _sshcmd "$CHOICE" || echo "[ ${CHOICE} ] is null" | _log 'WARN'
+#test -n "$CHOICE" \
+#    && echo Selected "${CHOICE} -> ${CHOICES[$CHOICE]}" | _log 'INFO' \
+#    || echo "[ ${CHOICE} ] is null" | _log 'WARN' && exit 71
 
-#echo "${CHOICES[$CHOICE]}"
-
-
-tmux_proc=$(pgrep tmux | tr \\n _)
-
-[ -z "$TMUX" ] && [ -z "$tmux_proc" ] && \
-    tmux new-session -s "ssh-$CHOICE" -c "$HOME" "${CHOICES[$CHOICE]}" && exit 70
-
-if ! tmux has-session -t "ssh-$CHOICE" 2>/dev/null; then
-    tmux new-session -ds "ssh-$CHOICE" -c "$HOME" "${CHOICES[$CHOICE]}" \; attach && exit 70
+if [ -n "$CHOICE" ]; then
+    echo Selected "${CHOICE} -> ${CHOICES[$CHOICE]}" | _log 'INFO'
+else
+    echo "Choice is null exiting..." | _log 'WARN' && exit 71
 fi
 
-# If -d is specified, any other clients attached to the session are detached.
-# If -x is given, send SIGHUP to the parent process of the client as well as detaching the client, typically causing it to exit.
-tmux attach-session -dx -t "ssh-$CHOICE" && exit 70
+if ! tmux -S /tmp/tmux-1000/sshtsock list-session -F "#{pid}" 2>/dev/null; then
+    tmux -S /tmp/tmux-1000/sshtsock new-session -n "$CHOICE" -s ssh "${CHOICES[$CHOICE]}" && exit 70
+fi
+
+if tmux -S /tmp/tmux-1000/sshtsock has-session -t ssh 2>/dev/null; then
+    tmux -S /tmp/tmux-1000/sshtsock attach-session -t ssh\; new-window -n "$CHOICE" "${CHOICES[$CHOICE]}" && exit 70
+fi
