@@ -6,11 +6,7 @@
 
 
 function _determine_browser() {
-    if [[ -x $(which brave-browser) ]]; then
-        BROWSER='brave-browser'
-    else
         BROWSER='firefox'
-    fi
 }
 
 function _i3cmd() {

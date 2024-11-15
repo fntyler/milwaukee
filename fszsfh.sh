@@ -29,10 +29,13 @@ function _sshcmd() {
 
 declare -A CHOICES
 
-export FZF_DEFAULT_OPTS="--color=bg+:#D9D9D9,bg:#E1E1E1,border:#C8C8C8,spinner:#719899,hl:#719872,fg:#0388A6,header:#719872,info:#150023,pointer:#E12672,marker:#E17899,fg+:#0388A6,preview-bg:#D9D9D9,prompt:#0099BD,hl+:#024059,query:#024059 \
-    --border \
-    --reverse"
-
+export FZF_DEFAULT_OPTS=$FZF_DEFAULT_OPTS'
+  --color=fg:#dbcbcb,fg+:#ffffff,bg:#161616,bg+:#161616
+  --color=hl:#5f87af,hl+:#5fd7ff,info:#e7e723,marker:#87ff00
+  --color=prompt:#d7005f,spinner:#af5fff,pointer:#af5fff,header:#52dede
+  --color=border:#b8b8b8,query:#ffffff
+  --border="rounded" --preview-window="border-rounded" --prompt="> "
+  --marker=">" --pointer="◆"'
 
 # main
 
@@ -60,5 +63,5 @@ if ! tmux -S /tmp/tmux-1000/sshtsock list-session -F "#{pid}" 2>/dev/null; then
 fi
 
 if tmux -S /tmp/tmux-1000/sshtsock has-session -t ssh 2>/dev/null; then
-    tmux -S /tmp/tmux-1000/sshtsock attach-session -t ssh\; new-window -n "$CHOICE" "${CHOICES[$CHOICE]}" && exit 70
+    tmux -S /tmp/tmux-1000/sshtsock attach-session -dx -t ssh\; new-window -n "$CHOICE" "${CHOICES[$CHOICE]}" && exit 70
 fi
