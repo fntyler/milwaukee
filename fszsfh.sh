@@ -59,9 +59,14 @@ else
 fi
 
 if ! tmux -S /tmp/tmux-1000/sshtsock list-session -F "#{pid}" 2>/dev/null; then
-    tmux -S /tmp/tmux-1000/sshtsock new-session -n "$CHOICE" -s ssh "${CHOICES[$CHOICE]}" && exit 70
+    echo "New session -> ssh w/ new window ${CHOICE} command ${CHOICES[$CHOICE]}" | _log
+    tmux -S /tmp/tmux-1000/sshtsock new-session -d -s "$CHOICE" "${CHOICES[$CHOICE]}"\; attach
 fi
 
-if tmux -S /tmp/tmux-1000/sshtsock has-session -t ssh 2>/dev/null; then
-    tmux -S /tmp/tmux-1000/sshtsock attach-session -dx -t ssh\; new-window -n "$CHOICE" "${CHOICES[$CHOICE]}" && exit 70
+if tmux -S /tmp/tmux-1000/sshtsock has-session -t "$CHOICE" 2>/dev/null; then
+    echo "sshtsock has session -> ssh creating new window ${CHOICE}" | _log
+    tmux -S /tmp/tmux-1000/sshtsock attach-session -dx -t ${CHOICE}\; new-window "${CHOICES[$CHOICE]}" && exit 70
 fi
+
+echo "sshtsock new session $CHOICE -> ssh creating new window ${CHOICES[$CHOICE]}" | _log
+#tmux -S /tmp/tmux-1000/sshtsock attach-session -dx \; new-session -d -s "$CHOICE" "${CHOICES[$CHOICE]}" \; attach-session -dx -t "$CHOICE"
