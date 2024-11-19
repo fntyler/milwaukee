@@ -44,13 +44,17 @@ if [ -e "$HOME/.fszsfh.txt" ]; then
         echo "Sourced $HOME/.fszsfh.txt " | _log "$@"
 fi
 
+#test -n "$1" && echo "arg 1 is $1" | _log "$@" && exit 70
+if [ -n "$1" ]; then
+    echo "arg 1 is $1" | _log "$@" && exit 70
+    #CHOICE="$1"
+fi
+
 CHOICES+=( [localhost]='127.0.0.1' )
 
-CHOICE=$(for i in "${!CHOICES[@]}"; do echo "$i"; done | fzf)
-
-#test -n "$CHOICE" \
-#    && echo Selected "${CHOICE} -> ${CHOICES[$CHOICE]}" | _log 'INFO' \
-#    || echo "[ ${CHOICE} ] is null" | _log 'WARN' && exit 71
+if [ -z "$CHOICE" ]; then
+    CHOICE=$(for i in "${!CHOICES[@]}"; do echo "$i"; done | fzf)
+fi
 
 if [ -n "$CHOICE" ]; then
     echo Selected "${CHOICE} -> ${CHOICES[$CHOICE]}" | _log 'INFO'
@@ -60,13 +64,20 @@ fi
 
 if ! tmux -S /tmp/tmux-1000/sshtsock list-session -F "#{pid}" 2>/dev/null; then
     echo "New session -> ssh w/ new window ${CHOICE} command ${CHOICES[$CHOICE]}" | _log
-    tmux -S /tmp/tmux-1000/sshtsock new-session -d -s "$CHOICE" "${CHOICES[$CHOICE]}"\; attach
+    tmux -S /tmp/tmux-1000/sshtsock new-session -d -s "$CHOICE" "${CHOICES[$CHOICE]}"\; attach && exit 70
 fi
 
 if tmux -S /tmp/tmux-1000/sshtsock has-session -t "$CHOICE" 2>/dev/null; then
-    echo "sshtsock has session -> ssh creating new window ${CHOICE}" | _log
-    tmux -S /tmp/tmux-1000/sshtsock attach-session -dx -t ${CHOICE}\; new-window "${CHOICES[$CHOICE]}" && exit 70
+    #if [ -n "$1" ]; then 
+    #    tmux -S /tmp/tmux-1000/sshtsock attach-session -dx -t "${CHOICE}" \; new-window ${CHOICES[$CHOICE]} && exit 70
+    #fi
+    echo "Attach to existing session $CHOICE -> ssh creating new window ${CHOICES[$CHOICE]}" | _log
+    tmux -S /tmp/tmux-1000/sshtsock attach-session -dx -t "${CHOICE}" && exit 70
+    # new-window "${CHOICES[$CHOICE]}" # && exit 70
 fi
 
-echo "sshtsock new session $CHOICE -> ssh creating new window ${CHOICES[$CHOICE]}" | _log
+echo "Another new session $CHOICE -> ssh creating new window ${CHOICES[$CHOICE]}" | _log
+#tmux -S /tmp/tmux-1000/sshtsock new-session -ADX -s "$CHOICE" "${CHOICES[$CHOICE]}"
+#tmux -S /tmp/tmux-1000/sshtsock new-session -d -s "$CHOICE" "${CHOICES[$CHOICE]}" \; switch-client -t "$CHOICE"
 #tmux -S /tmp/tmux-1000/sshtsock attach-session -dx \; new-session -d -s "$CHOICE" "${CHOICES[$CHOICE]}" \; attach-session -dx -t "$CHOICE"
+tmux -S /tmp/tmux-1000/sshtsock attach-session -dx \; new-session -s "$CHOICE" "${CHOICES[$CHOICE]}" \; switch-client -t "$CHOICE" && exit 70
