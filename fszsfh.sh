@@ -26,7 +26,7 @@ function _sshcmd() {
     ssh -oUser=fnt -oHost="$REMOTE_HOST" -oPort=22
 }
 
-
+TSSHSOCK='/tmp/tmux-1000/sshtsock'
 declare -A CHOICES
 
 export FZF_DEFAULT_OPTS=$FZF_DEFAULT_OPTS'
@@ -62,22 +62,21 @@ else
     echo "Choice is null exiting..." | _log 'WARN' && exit 71
 fi
 
-if ! tmux -S /tmp/tmux-1000/sshtsock list-session -F "#{pid}" 2>/dev/null; then
-    echo "New session -> ssh w/ new window ${CHOICE} command ${CHOICES[$CHOICE]}" | _log
-    tmux -S /tmp/tmux-1000/sshtsock new-session -d -s "$CHOICE" "${CHOICES[$CHOICE]}"\; attach && exit 70
+
+if ! tmux -S $TSSHSOCK list-session -F "#{pid}" 2>/dev/null; then
+    echo "create init session" | _log
+    tmux -S $TSSHSOCK new-session -d -s "$CHOICE" "${CHOICES[$CHOICE]}"
 fi
 
-if tmux -S /tmp/tmux-1000/sshtsock has-session -t "$CHOICE" 2>/dev/null; then
-    #if [ -n "$1" ]; then 
-    #    tmux -S /tmp/tmux-1000/sshtsock attach-session -dx -t "${CHOICE}" \; new-window ${CHOICES[$CHOICE]} && exit 70
-    #fi
-    echo "Attach to existing session $CHOICE -> ssh creating new window ${CHOICES[$CHOICE]}" | _log
-    tmux -S /tmp/tmux-1000/sshtsock attach-session -dx -t "${CHOICE}" && exit 70
-    # new-window "${CHOICES[$CHOICE]}" # && exit 70
-fi
 
-echo "Another new session $CHOICE -> ssh creating new window ${CHOICES[$CHOICE]}" | _log
-#tmux -S /tmp/tmux-1000/sshtsock new-session -ADX -s "$CHOICE" "${CHOICES[$CHOICE]}"
-#tmux -S /tmp/tmux-1000/sshtsock new-session -d -s "$CHOICE" "${CHOICES[$CHOICE]}" \; switch-client -t "$CHOICE"
-#tmux -S /tmp/tmux-1000/sshtsock attach-session -dx \; new-session -d -s "$CHOICE" "${CHOICES[$CHOICE]}" \; attach-session -dx -t "$CHOICE"
-tmux -S /tmp/tmux-1000/sshtsock attach-session -dx \; new-session -s "$CHOICE" "${CHOICES[$CHOICE]}" \; switch-client -t "$CHOICE" && exit 70
+#if ! tmux -S $TSSHSOCK has-session -t "$CHOICE" 2>/dev/null; then
+#    echo "create a new session" | _log
+#    #tmux -S $TSSHSOCK attach-session -dx -t "${CHOICE}" && exit 70
+#    tmux -S $TSSHSOCK new-session -d -s "$CHOICE" "${CHOICES[$CHOICE]}"
+#fi
+
+#echo "attach to session" | _log
+#tmux -S $TSSHSOCK attach-session -dx \; new-session -d -s "$CHOICE" "${CHOICES[$CHOICE]}" \; attach-session -dx -t "$CHOICE"
+#tmux -S $TSSHSOCK attach-session -dx \; new-session -s "$CHOICE" "${CHOICES[$CHOICE]}" \; switch-client -t "$CHOICE" && exit 70
+#tmux -S $TSSHSOCK attach-session -dx -t "${CHOICE}"
+#switch-client -t "$CHOICE"
