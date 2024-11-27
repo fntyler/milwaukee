@@ -1,8 +1,12 @@
 #!/usr/bin/env bash
 
 # WIP
-# ssh sessionizer using tmux
-# inspired by https://github.com/ThePrimeagen/tmux-sessionizer/blob/master/tmux-sessionizer
+# tmux ssh sessionizer: f[s]z[s]f[h]
+# inspired by https://github.com/ThePrimeagen/tmux-sessionizer
+#
+# requirements:
+# - tmux
+# - fzf
 
 # logging functions
 prepare_log() {    
@@ -11,7 +15,6 @@ prepare_log() {
 	local DATETIME; DATETIME="$(date '+%Y-%m-%d %T')"
     local LOGFILE; LOGFILE='/tmp/fszsfh.log'
     echo "$DATETIME [$TYPE] $TEXT" | tee -a "$LOGFILE"
-	#printf '%s [%s] [Entrypoint]: %s\n' "$dt" "$TYPE" "$TEXT"
 }
 
 log_info() {
@@ -32,8 +35,9 @@ sock_name='ssh'
 sock_path="/tmp/tmux-1000/$sock_name"
 declare -A CHOICES
 
-# example of CHOICES
-CHOICES+=( [localhost]='127.0.0.1' )
+# example of CHOICES in 'fszsfh.txt'
+#CHOICES+=( [example]='ssh <user>@<example>:<port>' )
+#CHOICES+=( [server]='ssh -oUser=<username> -oIdentityFile=<file> -oPort=<port> <hostname|ip>' )
 
 # fzf theme
 export FZF_DEFAULT_OPTS=$FZF_DEFAULT_OPTS'
@@ -45,14 +49,12 @@ export FZF_DEFAULT_OPTS=$FZF_DEFAULT_OPTS'
   --marker=">" --pointer="◆"'
 
 # main
-
 if [ -e "$HOME/.fszsfh.txt" ]; then
     . "$HOME/.fszsfh.txt" && \
         log_info "Sourced $HOME/.fszsfh.txt"
 fi
 
 # wip
-#test -n "$1" && echo "arg 1 is $1" | _log "$@" && exit 70
 if [ -n "$1" ]; then
     log_info "arg 1 is $1" && exit 70
     #CHOICE="$1"
@@ -68,7 +70,7 @@ else
     log_warn "Choice is null exiting..." && exit 71
 fi
 
-tmuxpid=$(tmux -S "$sock_path" list-session -F "#{pid}" 2>/dev/null)
+tmuxpid=$(tmux -L "$sock_name" list-session -F "#{pid}" 2>/dev/null)
 
 if [ -z "$tmuxpid" ]; then
     log_info "Create new-session -> $CHOICE"
@@ -80,6 +82,5 @@ if ! tmux -L "$sock_name" -S "$sock_path" has-session -t "$CHOICE" 2>/dev/null; 
     tmux -L "$sock_name" -S "$sock_path" new-session -d -s "$CHOICE" "${CHOICES[$CHOICE]}" \; switch-client -t "$CHOICE" && exit 70
 fi
 
-
-log_info "attach to existing session -> $CHOICE"
+log_info "Attach to existing session -> $CHOICE"
 tmux -L "$sock_name" -S "$sock_path" attach-session -dx -t "$CHOICE"
