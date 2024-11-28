@@ -3,13 +3,13 @@
 # WIP
 # tmux ssh sessionizer: f[s]z[s]f[h]
 # inspired by https://github.com/ThePrimeagen/tmux-sessionizer
-#
+
 # requirements:
 # - tmux
 # - fzf
 
 # logging functions
-prepare_log() {    
+prepare_log() {
     local TYPE="$1"; shift
 	local TEXT="$*"; if [ "$#" -eq 0 ]; then TEXT="$(cat)"; fi
 	local DATETIME; DATETIME="$(date '+%Y-%m-%d %T')"
@@ -54,10 +54,11 @@ if [ -e "$HOME/.fszsfh.txt" ]; then
         log_info "Sourced $HOME/.fszsfh.txt"
 fi
 
-# wip
 if [ -n "$1" ]; then
-    log_info "arg 1 is $1" && exit 70
-    #CHOICE="$1"
+    log_info "$(basename "$0") executed with args $*"
+    CHOICE="$1"; shift
+    ACTION="$*"; if [ "$#" -eq 0 ]; then ACTION='new-window'; fi
+
 fi
 
 if [ -z "$CHOICE" ]; then
@@ -82,5 +83,12 @@ if ! tmux -L "$sock_name" -S "$sock_path" has-session -t "$CHOICE" 2>/dev/null; 
     tmux -L "$sock_name" -S "$sock_path" new-session -d -s "$CHOICE" "${CHOICES[$CHOICE]}" \; switch-client -t "$CHOICE" && exit 70
 fi
 
-log_info "Attach to existing session -> $CHOICE"
-tmux -L "$sock_name" -S "$sock_path" attach-session -dx -t "$CHOICE"
+if [ -z "$ACTION" ]; then
+    log_info "Attach to existing session -> $CHOICE"
+    tmux -S "$sock_path" switch-client -t "$CHOICE" \; attach-session -dx -t "$CHOICE" && exit 70
+else
+    log_info "$ACTION in existing session -> ${CHOICES[$CHOICE]}"
+    tmux -S "$sock_path" "$ACTION" "${CHOICES[$CHOICE]}"
+fi
+
+tmux -S "$sock_path" attach-session -dx -t "$CHOICE"
