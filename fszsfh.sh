@@ -14,7 +14,7 @@ prepare_log() {
 	local TEXT="$*"; if [ "$#" -eq 0 ]; then TEXT="$(cat)"; fi
 	local DATETIME; DATETIME="$(date '+%Y-%m-%d %T')"
     local LOGFILE; LOGFILE='/tmp/fszsfh.log'
-    echo "$DATETIME [$TYPE] $TEXT" | tee -a "$LOGFILE"
+    echo "$DATETIME [$TYPE] $TEXT" &>> "$LOGFILE"
 }
 
 log_info() {
@@ -31,8 +31,8 @@ log_error() {
 }
 
 # global variables
-sock_name='ssh'
-sock_path="/tmp/tmux-1000/$sock_name"
+SOCK_NAME='ssh'
+SOCK_PATH="/tmp/tmux-1000/$SOCK_NAME"
 declare -A CHOICES
 
 # example of CHOICES in 'fszsfh.txt'
@@ -71,24 +71,24 @@ else
     log_warn "Choice is null exiting..." && exit 71
 fi
 
-tmuxpid=$(tmux -L "$sock_name" list-session -F "#{pid}" 2>/dev/null)
+tmuxpid=$(tmux -L "$SOCK_NAME" list-session -F "#{pid}" 2>/dev/null)
 
 if [ -z "$tmuxpid" ]; then
     log_info "Create new-session -> $CHOICE"
-    tmux -L "$sock_name" -S "$sock_path" new-session -s "$CHOICE" "${CHOICES[$CHOICE]}" && exit 70
+    tmux -L "$SOCK_NAME" -S "$SOCK_PATH" new-session -s "$CHOICE" "${CHOICES[$CHOICE]}" && exit 70
 fi
 
-if ! tmux -L "$sock_name" -S "$sock_path" has-session -t "$CHOICE" 2>/dev/null; then
+if ! tmux -L "$SOCK_NAME" -S "$SOCK_PATH" has-session -t "$CHOICE" 2>/dev/null; then
     log_info "No session exists create new-session -> $CHOICE"
-    tmux -L "$sock_name" -S "$sock_path" new-session -d -s "$CHOICE" "${CHOICES[$CHOICE]}" \; switch-client -t "$CHOICE" && exit 70
+    tmux -L "$SOCK_NAME" -S "$SOCK_PATH" new-session -d -s "$CHOICE" "${CHOICES[$CHOICE]}" \; switch-client -t "$CHOICE" && exit 70
 fi
 
 if [ -z "$ACTION" ]; then
     log_info "Attach to existing session -> $CHOICE"
-    tmux -S "$sock_path" switch-client -t "$CHOICE" \; attach-session -dx -t "$CHOICE" && exit 70
+    tmux -S "$SOCK_PATH" switch-client -t "$CHOICE" \; attach-session -dx -t "$CHOICE" && exit 70
 else
     log_info "$ACTION in existing session -> ${CHOICES[$CHOICE]}"
-    tmux -S "$sock_path" "$ACTION" "${CHOICES[$CHOICE]}"
+    tmux -S "$SOCK_PATH" "$ACTION" "${CHOICES[$CHOICE]}"
 fi
 
-tmux -S "$sock_path" attach-session -dx -t "$CHOICE"
+tmux -S "$SOCK_PATH" attach-session -dx -t "$CHOICE"
