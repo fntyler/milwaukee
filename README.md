@@ -1,6 +1,10 @@
 # milwaukee
 Assortment of tools...
 
+## fszsfh.sh todo
+
+- [ ] change status bar session name background color for every new session.
+
 ## todo
 
 - [ ] provide basic description of each script/file
