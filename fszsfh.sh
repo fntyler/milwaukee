@@ -71,9 +71,9 @@ else
     log_warn "Choice is null exiting..." && exit 71
 fi
 
-tmuxpid=$(tmux -L "$SOCK_NAME" list-session -F "#{pid}" 2>/dev/null)
+TMUXPID=$(tmux -L "$SOCK_NAME" list-session -F "#{pid}" 2>/dev/null)
 
-if [ -z "$tmuxpid" ]; then
+if [ -z "$TMUXPID" ]; then
     log_info "Create new-session -> $CHOICE"
     tmux -L "$SOCK_NAME" -S "$SOCK_PATH" new-session -s "$CHOICE" "${CHOICES[$CHOICE]}" && exit 70
 fi
