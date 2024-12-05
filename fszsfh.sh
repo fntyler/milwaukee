@@ -73,6 +73,8 @@ fi
 
 TMUXPID=$(tmux -L "$SOCK_NAME" list-session -F "#{pid}" 2>/dev/null)
 
+#i3-msg title_format $(echo "$SOCK_NAME $CHOICE")
+
 if [ -z "$TMUXPID" ]; then
     log_info "Create new-session -> $CHOICE"
     tmux -L "$SOCK_NAME" -S "$SOCK_PATH" new-session -s "$CHOICE" "${CHOICES[$CHOICE]}" && exit 70
