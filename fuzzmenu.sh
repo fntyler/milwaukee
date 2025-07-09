@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # fzf menu - web browser
 # keys are menu options, values are web-browser targets
 # default-wm: i3
