@@ -26,10 +26,10 @@ function _i3cmd() {
 
     if [[ $IS_INCOGNITO == 'false' ]]; then
         test $(i3-msg "exec --no-startup-id ${DETERMINED_BROWSER} --new-window ${SELECTED_CHOICE}" && \
-            echo "Opened ${SELECTED_CHOICE}" | _log "$@")
+            echo "Opened ${SELECTED_CHOICE}" | _log)
     else
         test $(i3-msg "exec --no-startup-id ${DETERMINED_BROWSER} --new-window --incognito ${SELECTED_CHOICE}" && \
-            echo "Opened ${SELECTED_CHOICE} as incognito" | _log "$@")
+            echo "Opened ${SELECTED_CHOICE} as incognito" | _log)
     fi
 }
 
@@ -47,10 +47,10 @@ function _aerospace_cmd() {
 
     if [[ $IS_INCOGNITO == 'false' ]]; then
         test $(open --new /Applications/Firefox.app --args -new-window "${SELECTED_CHOICE}" && \
-            echo "Opened ${SELECTED_CHOICE}" | _log "$@")
+            echo 'Opened "'${SELECTED_CHOICE}'"' | _log)
     else
         test $(open --new /Applications/Firefox.app --args -private-window "${SELECTED_CHOICE}" && \
-            echo "Opened ${SELECTED_CHOICE} as incognito" | _log "$@")
+            echo 'Opened "'${SELECTED_CHOICE}'" as incognito' | _log)
     fi
 }
 
@@ -82,9 +82,9 @@ INCOGNITO='false'
 
 if [ -e "$HOME/.fuzzmenu_choices" ]; then
     . ~/.fuzzmenu_choices && \
-        echo 'Sourced ~/.fuzzmenu_choices' | _log "$@"
+        echo 'Sourced ~/.fuzzmenu_choices' | _log
 else
-    echo 'Missing ~/.fuzzmenu_choices' | _log "$@"
+    echo 'Missing ~/.fuzzmenu_choices' | _log
 fi
 
 CHOICES+=( [github]='https://github.com/' )
