@@ -84,7 +84,7 @@ if [ -e "$HOME/.fuzzmenu_choices" ]; then
     . ~/.fuzzmenu_choices && \
         echo 'Sourced ~/.fuzzmenu_choices' | _log
 else
-    echo 'Missing ~/.fuzzmenu_choices' | _log
+    echo 'Missing ~/.fuzzmenu_choices' | _log 'WARNING'
 fi
 
 CHOICES+=( [github]='https://github.com/' )
@@ -92,14 +92,15 @@ CHOICES+=( [twilio]='https://console.twilio.com/us1/?frameUrl=/console' )
 CHOICES+=( [pep8-python]='https://peps.python.org/pep-0008/' )
 CHOICES+=( [localhost-8000-]='http://localhost:8000' )
 
-
 CHOICE=$(for i in ${!CHOICES[@]}; do echo $i; done | fzf)
 
 if [[ $CHOICE =~ .*-$ ]]; then INCOGNITO='true'; fi
 
-test -z $CHOICE && exit 70
+test -z $CHOICE && echo 'No valid choices presented' | _log 'ERROR' && exit 70
 
-_determine_wm && echo "Window Manager is $WM" | _log "$@"
+_determine_browser && echo "Browser is $BROWSER" | _log
+
+_determine_wm && echo "Window Manager is $WM" | _log 
 
 if [ "$WM" != 'i3wm' ]; then
     _aerospace_cmd ${CHOICES[$CHOICE]} ${BROWSER} ${INCOGNITO}
