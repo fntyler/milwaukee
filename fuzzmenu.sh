@@ -9,6 +9,10 @@ function _determine_browser() {
         BROWSER='firefox'
 }
 
+function _determine_wm() {
+        if [ -n "$(which aerospace)" ]; then WM='aerospace'; else WM='i3wm'; fi
+}
+
 function _i3cmd() {
     local SELECTED_CHOICE
     local DETERMINED_BROWSER
@@ -25,6 +29,27 @@ function _i3cmd() {
             echo "Opened ${SELECTED_CHOICE}" | _log "$@")
     else
         test $(i3-msg "exec --no-startup-id ${DETERMINED_BROWSER} --new-window --incognito ${SELECTED_CHOICE}" && \
+            echo "Opened ${SELECTED_CHOICE} as incognito" | _log "$@")
+    fi
+}
+
+# wip
+function _aerospace_cmd() {
+    local SELECTED_CHOICE
+    local DETERMINED_BROWSER
+    local IS_INCOGNITO
+
+    SELECTED_CHOICE=${1}
+    DETERMINED_BROWSER=${2}
+    IS_INCOGNITO=${3}
+
+    test -z "$SELECTED_CHOICE" && echo 'Selected choice is null' && exit 71
+
+    if [[ $IS_INCOGNITO == 'false' ]]; then
+        test $(open --new /Applications/Firefox.app --args -new-window "${SELECTED_CHOICE}" && \
+            echo "Opened ${SELECTED_CHOICE}" | _log "$@")
+    else
+        test $(open --new /Applications/Firefox.app --args -private-window "${SELECTED_CHOICE}" && \
             echo "Opened ${SELECTED_CHOICE} as incognito" | _log "$@")
     fi
 }
@@ -74,8 +99,12 @@ if [[ $CHOICE =~ .*-$ ]]; then INCOGNITO='true'; fi
 
 test -z $CHOICE && exit 70
 
-_determine_browser
+_determine_wm && echo "Window Manager is $WM" | _log "$@"
 
-_i3cmd ${CHOICES[$CHOICE]} ${BROWSER} ${INCOGNITO}
+if [ "$WM" != 'i3wm' ]; then
+    _aerospace_cmd ${CHOICES[$CHOICE]} ${BROWSER} ${INCOGNITO}
+else
+    _i3cmd ${CHOICES[$CHOICE]} ${BROWSER} ${INCOGNITO}
+fi
 
 unset FZF_DEFAULT_OPTS
