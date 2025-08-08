@@ -46,10 +46,10 @@ function _aerospace_cmd() {
     test -z "$SELECTED_CHOICE" && echo 'Selected choice is null' && exit 71
 
     if [[ $IS_INCOGNITO == 'false' ]]; then
-        test $(open --new /Applications/Firefox.app --args -new-window "${SELECTED_CHOICE}" && \
+        test $(open -a /Applications/Firefox.app/Contents/MacOS/firefox -n --args -new-window "${SELECTED_CHOICE}" && \
             echo 'Opened "'${SELECTED_CHOICE}'"' | _log)
     else
-        test $(open --new /Applications/Firefox.app --args -private-window "${SELECTED_CHOICE}" && \
+        test $(open -a /Applications/Firefox.app/Contents/MacOS/firefox -n --args -private-window "${SELECTED_CHOICE}" && \
             echo 'Opened "'${SELECTED_CHOICE}'" as incognito' | _log)
     fi
 }
